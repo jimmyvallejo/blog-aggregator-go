@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	if err := json.NewEncoder(w).Encode(payload); err != nil {
@@ -15,7 +15,7 @@ func respondWithJson(w http.ResponseWriter, code int, payload interface{}) {
 }
 
 func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJson(w, code, ErrorResponse{Error: message})
+	respondWithJSON(w, code, ErrorResponse{Error: message})
 }
 
 func respondNoBody(w http.ResponseWriter, code int) {
