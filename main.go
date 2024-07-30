@@ -50,9 +50,10 @@ func main() {
 	mux.HandleFunc("GET /v1/healthz", handlers.HandlerReadiness)
 	mux.HandleFunc("GET /v1/err", handlers.HandlerError)
 
-	//User Routes
+	// User Routes
 
 	mux.HandleFunc("POST /v1/users", h.CreateUser)
+	mux.HandleFunc("GET /v1/users", h.GetUserByApiKey)
 
 	srv := &http.Server{
 		Addr:    ":" + APICfg.Port,
