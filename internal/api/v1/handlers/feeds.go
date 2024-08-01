@@ -30,7 +30,7 @@ func (h *Handlers) CreateFeed(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := database.CreateFeedParams{
+	feedParams := database.CreateFeedParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
@@ -39,11 +39,39 @@ func (h *Handlers) CreateFeed(w http.ResponseWriter, r *http.Request) {
 		UserID:    user.ID,
 	}
 
-	feed, err := h.DB.CreateFeed(r.Context(), params)
+	feed, err := h.DB.CreateFeed(r.Context(), feedParams)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to create feed")
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, feed)
+	feedFollowParams := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	feedFollow, err := h.DB.CreateFeedFollow(r.Context(), feedFollowParams)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to create feed follow")
+	}
+
+	response := CreateFeedResponse{
+		Feed:       feed,
+		FeedFollow: feedFollow,
+	}
+
+	respondWithJSON(w, http.StatusCreated, response)
+}
+
+func (h *Handlers) GetAllFeeds(w http.ResponseWriter, r *http.Request) {
+
+	feeds, err := h.DB.GetAllFeeds(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Failed to get feeds")
+		return
+	}
+	respondWithJSON(w, http.StatusOK, feeds)
 }

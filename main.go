@@ -60,6 +60,10 @@ func main() {
 	// Feed Routes
 
 	mux.HandleFunc("POST /v1/feeds", m.IsAuthenticated(h.CreateFeed))
+	mux.HandleFunc("GET /v1/feeds", h.GetAllFeeds)
+	mux.HandleFunc("POST /v1/feed_follows", m.IsAuthenticated(h.AddFeedFollow))
+	mux.HandleFunc("GET /v1/feed_follows", m.IsAuthenticated(h.GetAllFeedFollows))
+	mux.HandleFunc("DELETE /v1/feed_follows/{id}", h.RemoveFeedFollow)
 
 	srv := &http.Server{
 		Addr:    ":" + APICfg.Port,
