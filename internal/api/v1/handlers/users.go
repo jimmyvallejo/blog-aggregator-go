@@ -1,16 +1,13 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
-	"errors"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jimmyvallejo/blog-aggregator-go/internal/api/common"
 	"github.com/jimmyvallejo/blog-aggregator-go/internal/database"
-	"github.com/jimmyvallejo/blog-aggregator-go/internal/utils"
 )
 
 type createUserRequest struct {
@@ -42,27 +39,10 @@ func (h *Handlers) CreateUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetUserByApiKey(w http.ResponseWriter, r *http.Request) {
-	token, err := utils.ExtractToken(r, "ApiKey ")
-	if err != nil {
-		if tokenErr, ok := err.(*utils.TokenError); ok {
-			respondWithError(w, tokenErr.Code, tokenErr.Message)
-		} else {
-			respondWithError(w, http.StatusBadRequest, "Invalid API key")
-		}
+	user, ok := r.Context().Value(common.UserContextKey).(database.User)
+	if !ok {
+		respondWithError(w, http.StatusUnauthorized, "Unathorized")
 		return
 	}
-
-	user, err := h.DB.GetUserByApiKey(r.Context(), token)
-	if err != nil {
-		switch {
-		case errors.Is(err, sql.ErrNoRows):
-			respondWithError(w, http.StatusNotFound, "User not found")
-		default:
-			log.Printf("Error getting user by API key: %v", err)
-			respondWithError(w, http.StatusInternalServerError, "Internal server error")
-		}
-		return
-	}
-
 	respondWithJSON(w, http.StatusOK, user)
 }

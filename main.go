@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/jimmyvallejo/blog-aggregator-go/internal/api/middleware"
 	"github.com/jimmyvallejo/blog-aggregator-go/internal/api/v1/handlers"
 	"github.com/jimmyvallejo/blog-aggregator-go/internal/database"
 	"github.com/joho/godotenv"
@@ -44,6 +45,7 @@ func main() {
 	}
 
 	h := handlers.NewHandlers(APICfg.DB)
+	m := middleware.NewMiddleware(APICfg.DB)
 
 	// Test readiness
 
@@ -53,7 +55,11 @@ func main() {
 	// User Routes
 
 	mux.HandleFunc("POST /v1/users", h.CreateUser)
-	mux.HandleFunc("GET /v1/users", h.GetUserByApiKey)
+	mux.HandleFunc("GET /v1/users", m.IsAuthenticated(h.GetUserByApiKey))
+
+	// Feed Routes
+
+	mux.HandleFunc("POST /v1/feeds", m.IsAuthenticated(h.CreateFeed))
 
 	srv := &http.Server{
 		Addr:    ":" + APICfg.Port,
